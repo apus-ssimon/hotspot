@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotspot Maker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .p-4 { padding: 1rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .ml-5 { margin-left: 1.25rem; }
+        
+        .m-0 { margin: 0; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mt-8 { margin-top: 2rem; }
+        
+        .max-w-6xl { max-width: 72rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .w-full { width: 100%; }
+        .max-h-32 { max-height: 8rem; }
+        .h-5 { height: 1.25rem; }
+        .w-5 { width: 1.25rem; }
+        
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        
+        .text-white { color: white; }
+        .text-red-500 { color: #ef4444; }
+        .text-red-700 { color: #b91c1c; }
+        .text-gray-500 { color: #6b7280; }
+        .text-blue-600 { color: #2563eb; }
+        
+        .bg-purple-500 { background-color: #8b5cf6; }
+        .bg-purple-600 { background-color: #7c3aed; }
+        .bg-green-500 { background-color: #22c55e; }
+        .bg-green-600 { background-color: #16a34a; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .bg-blue-700 { background-color: #1d4ed8; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-gray-200 { background-color: #e5e7eb; }
+        
+        .border { border: 1px solid #d1d5db; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        
+        .block { display: block; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .col-span-2 { grid-column: span 2 / span 2; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-x-2 > * + * { margin-left: 0.5rem; }
+        .align-items-center { align-items: center; }
+        
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        
+        .cursor-pointer { cursor: pointer; }
+        .overflow-hidden { overflow: hidden; }
+        .overflow-x-auto { overflow-x: auto; }
+        .whitespace-pre-wrap { white-space: pre-wrap; }
+        
+        .hover\:bg-purple-600:hover { background-color: #7c3aed; }
+        .hover\:bg-green-600:hover { background-color: #16a34a; }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+        .hover\:text-red-700:hover { color: #b91c1c; }
+        
+        .list-decimal { list-style-type: decimal; }
+        .form-checkbox { 
+            appearance: none; 
+            background-color: white; 
+            border: 1px solid #d1d5db; 
+            border-radius: 0.25rem; 
+            width: 1.25rem;
+            height: 1.25rem;
+            position: relative;
+        }
+        .form-checkbox:checked { 
+            background-color: #2563eb; 
+            border-color: #2563eb; 
+        }
+        .form-checkbox:checked::after {
+            content: '✓';
+            color: white;
+            font-size: 0.875rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        input, textarea, select {
+            border: 1px solid #d1d5db;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 1rem;
+        }
+        
+        input:focus, textarea:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+        
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 0.25rem;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        canvas {
+            border: 1px solid #d1d5db;
+            width: 100%;
+            aspect-ratio: 3/2;
+        }
+        
+        pre {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin: 0;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            fill: currentColor;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="p-4 max-w-6xl mx-auto">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold mb-4">Hotspot Maker</h1>
+            
+            <div class="mb-4">
+                <label class="block mb-2">Main Image (1200x800px)</label>
+                <input
+                    type="file"
+                    accept="image/*"
+                    id="mainImageInput"
+                    class="border p-2 rounded"
+                />
+            </div>
+
+            <div class="mb-4">
+                <div class="flex items-center gap-4 mb-2">
+                    <button
+                        type="button"
+                        id="toggleColorsBtn"
+                        class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+                    >
+                        Toggle Colors
+                    </button>
+                </div>
+                <canvas
+                    id="previewCanvas"
+                    class="border w-full"
+                    style="aspect-ratio: 3/2;"
+                ></canvas>
+            </div>
+
+            <div id="spotsContainer" class="space-y-4">
+                <!-- Spots will be dynamically added here -->
+            </div>
+
+            <button
+                type="button"
+                id="addSpotBtn"
+                class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Spot
+            </button>
+
+            <button
+                type="button"
+                id="exportBtn"
+                class="mt-6 flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7,10 12,15 17,10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export Project
+            </button>
+
+            <div id="iframeCodeSection" class="mt-8 border p-6 rounded-lg bg-gray-50 hidden">
+                <h2 class="text-xl font-bold mb-4">Your Hotspot Project Is Ready!</h2>
+                <p class="mb-4">Follow these steps to add it to Brightspace:</p>
+                <ol class="list-decimal ml-5 mb-6 space-y-2">
+                    <li>Extract the zip file you just downloaded</li>
+                    <li>Upload the entire folder to your Brightspace Content area</li>
+                    <li>Enter the Brightspace destination folder path below</li>
+                    <li>Copy the embed code and paste it into your Brightspace HTML editor</li>
+                </ol>
+
+                <div class="mb-6">
+                    <label class="block mb-2 font-medium">
+                        Brightspace Destination Folder Path
+                        <input
+                            type="text"
+                            id="destinationPathInput"
+                            placeholder="e.g. /content/enforced/12345-COURSE-NAME/"
+                            class="w-full mt-2 border p-2 rounded"
+                        />
+                    </label>
+                </div>
+
+                <div class="border rounded overflow-hidden">
+                    <div class="flex justify-between items-center bg-gray-200 px-4 py-2">
+                        <h3 class="font-medium">Iframe Embed Code</h3>
+                        <button
+                            id="copyBtn"
+                            type="button"
+                            class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                        >
+                            Copy
+                        </button>
+                    </div>
+                    <pre id="iframeCode" class="bg-gray-100 p-4 overflow-x-auto whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State variables
+        let spots = [];
+        let mainImage = null;
+        let hoverImages = {};
+        let showColors = false;
+        let infoPanelImages = {};
+        let destinationPath = '';
+
+        const defaultSpot = {
+            name: "New Hotspot",
+            image: "",
+            hoverImage: "",
+            description: "Description here",
+            x: 5,
+            y: 5,
+            scale: 2,
+            isRectangle: false,
+            scaleX: 2,
+            scaleY: 2
+        };
+
+        // HTML template for the exported project
+        function getHtmlTemplate() {
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="spots.js"><\/script>
+    <title>Interactive Map</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            position: relative;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        #mapCanvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            cursor: default;
+        }
+        #infoPanel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            width: 90%;
+            max-width: 300px;
+            z-index: 1000;
+        }
+        #eventTitle {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        #eventImage {
+            max-width: 100%;
+            height: auto;
+        }
+        #eventDescription {
+            font-size: 0.9em;
+        }
+        #closeButton {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+            background-color: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #closeButton:hover {
+            background-color: #c53030;
+        }
+        ul{
+          text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="mapCanvas"></canvas>
+        <div id="infoPanel">
+            <button id="closeButton">&times;</button>
+            <img id="eventImage" src="" alt="Event Image">
+            <h2 id="eventTitle"></h2>
+            <p id="eventDescription"></p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const canvas = document.getElementById("mapCanvas");
+            const ctx = canvas.getContext("2d");
+            const container = document.querySelector(".container");
+            const closeButton = document.getElementById("closeButton");
+            const mainImg = "images/main.png";
+            var colorsOn = 0;
+            let randomColors = [];
+            
+            function resizeCanvas() {
+                const containerWidth = container.clientWidth;
+                const aspectRatio = 533 / 800;
+                canvas.width = containerWidth;
+                canvas.height = containerWidth * aspectRatio;
+                drawMap();
+            }
+            
+            function drawMap() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
+                drawTransparentColors();
+            }
+            
+            function drawTransparentColors() {
+                ctx.save();
+                for (let i = 0; i < spots.length; i++) {
+                    if (showColors) {
+                        colorsOn = 0.8;
+                    } else {
+                        colorsOn = 0;
+                    }
+                    const color = randomColors[i];
+                    ctx.fillStyle = 'rgba(' + color.r + ', ' + color.g + ', ' + color.b + ', ' + colorsOn + ')';
+                    ctx.beginPath();
+                    const path = getSpotPath(spots[i]);
+                    ctx.fill(path);
+                }
+                ctx.restore();
+            }
+            
+            function generateRandomColors() {
+                randomColors = spots.map(() => ({
+                    r: Math.floor(Math.random() * 256),
+                    g: Math.floor(Math.random() * 256),
+                    b: Math.floor(Math.random() * 256)
+                }));
+            }
+            
+            function getSpotPath(spot) {
+                const w = canvas.width;
+                const h = canvas.height;
+                if (spot.isRectangle) {
+                    const convertedScaleX = (spot.scaleX || 1) * 0.1;
+                    const convertedScaleY = (spot.scaleY || 1) * 0.1;
+                    const width = Math.min(w, h) * convertedScaleX;
+                    const height = Math.min(w, h) * convertedScaleY;
+                    const x = spot.x * 0.1 * w;
+                    const y = spot.y * 0.1 * h;
+                    const path = new Path2D();
+                    path.rect(x - width/2, y - height/2, width, height);
+                    return path;
+                } else {
+                    const convertedScale = (spot.scale || 1) * 0.1;
+                    const baseSize = Math.min(w, h) * convertedScale;
+                    const x = spot.x * 0.1 * w;
+                    const y = spot.y * 0.1 * h;
+                    const path = new Path2D();
+                    path.rect(x - baseSize/2, y - baseSize/2, baseSize, baseSize);
+                    return path;
+                }
+            }
+            
+            function handleHover(event) {
+                const rect = canvas.getBoundingClientRect();
+                const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+                const y = (event.clientY - rect.top) * (canvas.height / rect.height);
+                let isOverSpot = false;
+                for (let i = 0; i < spots.length; i++) {
+                    const spot = spots[i];
+                    const path = getSpotPath(spot);
+                    if (ctx.isPointInPath(path, x, y)) {
+                        mapImage.src = 'images/' + spot.hoverImage;
+                        canvas.style.cursor = 'pointer';
+                        isOverSpot = true;
+                        return;
+                    }
+                }
+                if (!isOverSpot) {
+                    canvas.style.cursor = 'default';
+                    mapImage.src = mainImg;
+                }
+            }
+            
+            function handleClick(event) {
+                const rect = canvas.getBoundingClientRect();
+                const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+                const y = (event.clientY - rect.top) * (canvas.height / rect.height);
+                for (let spot of spots) {
+                    const path = getSpotPath(spot);
+                    if (ctx.isPointInPath(path, x, y)) {
+                        updateInfoPanel(spot);
+                        return;
+                    }
+                }
+                hideInfoPanel();
+            }
+            
+            function updateInfoPanel(spot) {
+                const infoPanel = document.getElementById("infoPanel");
+                const title = document.getElementById("eventTitle");
+                const image = document.getElementById("eventImage");
+                const description = document.getElementById("eventDescription");
+                title.textContent = spot.name;
+                if (spot.image && spot.image.trim() !== "") {
+                    image.src = 'images/' + spot.image;
+                    image.style.display = "block";
+                } else {
+                    image.style.display = "none";
+                }
+                description.innerHTML = spot.description;
+                infoPanel.style.display = "block";
+            }
+            
+            function hideInfoPanel() {
+                const infoPanel = document.getElementById("infoPanel");
+                infoPanel.style.display = "none";
+            }
+            
+            window.addEventListener("resize", resizeCanvas);
+            const mapImage = new Image();
+            mapImage.onload = function() {
+                resizeCanvas();
+            };
+            mapImage.src = mainImg;
+            generateRandomColors();
+            canvas.addEventListener("mousemove", handleHover);
+            canvas.addEventListener("click", handleClick);
+            closeButton.addEventListener("click", hideInfoPanel);
+            
+            window.updateSpotSizes = function(newScale) {
+                spots.forEach(spot => {
+                    if (!spot.isRectangle) {
+                        spot.scale = newScale;
+                    } else {
+                        spot.scaleX = newScale;
+                        spot.scaleY = newScale;
+                    }
+                });
+                drawMap();
+            }
+        });
+    <\/script>
+</body>
+</html>`;
+        }
+
+        // Validate image dimensions
+        function validateImageDimensions(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    if (img.width === 1200 && img.height === 800) {
+                        resolve(true);
+                    } else {
+                        reject(`Image must be 1200x800 pixels. Current size: ${img.width}x${img.height}`);
+                    }
+                };
+                img.onerror = () => reject('Error loading image');
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        // Draw canvas preview
+        function drawCanvas() {
+            const canvas = document.getElementById('previewCanvas');
+            if (!canvas || !mainImage) return;
+            
+            const ctx = canvas.getContext('2d');
+            const containerWidth = canvas.parentElement.clientWidth;
+            const aspectRatio = 533 / 800;
+            canvas.width = containerWidth;
+            canvas.height = containerWidth * aspectRatio;
+
+            const img = new Image();
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                spots.forEach((spot, index) => {
+                    if (showColors) {
+                        ctx.fillStyle = `rgba(${index * 50}, ${255 - index * 50}, 150, 0.5)`;
+                        const w = canvas.width;
+                        const h = canvas.height;
+
+                        if (spot.isRectangle) {
+                            const convertedScaleX = (spot.scaleX || 1) * 0.1;
+                            const convertedScaleY = (spot.scaleY || 1) * 0.1;
+                            const width = Math.min(w, h) * convertedScaleX;
+                            const height = Math.min(w, h) * convertedScaleY;
+                            const x = spot.x * 0.1 * w;
+                            const y = spot.y * 0.1 * h;
+
+                            ctx.beginPath();
+                            ctx.rect(x - width / 2, y - height / 2, width, height);
+                            ctx.fill();
+                        } else {
+                            const convertedScale = (spot.scale || 1) * 0.1;
+                            const baseSize = Math.min(w, h) * convertedScale;
+                            const x = spot.x * 0.1 * w;
+                            const y = spot.y * 0.1 * h;
+
+                            ctx.beginPath();
+                            ctx.rect(x - baseSize / 2, y - baseSize / 2, baseSize, baseSize);
+                            ctx.fill();
+                        }
+                    }
+                });
+            };
+            img.src = mainImage;
+        }
+
+        // Create spot HTML
+        function createSpotElement(spot, index) {
+            const spotDiv = document.createElement('div');
+            spotDiv.className = 'border p-4 rounded';
+            spotDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Spot ${index + 1}</h3>
+                    <button type="button" onclick="removeSpot(${index})" class="p-2 text-red-500 hover:text-red-700">
+                        <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3,6 5,6 21,6"></polyline>
+                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block mb-1">Title</label>
+                        <input type="text" value="${spot.name}" onchange="updateSpotField(${index}, 'name', this.value)" class="w-full border p-2 rounded" />
+                    </div>
+                    <div class="flex items-center align-items-center">
+                        <label class="flex items-center align-items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" ${spot.isRectangle ? 'checked' : ''} onchange="toggleRectangleMode(${index})" class="form-checkbox h-5 w-5 text-blue-600" style="margin-right: 0.5rem;" />
+                            <span class="text-sm font-medium">Use Rectangle Shape</span>
+                        </label>
+                    </div>
+                    ${!spot.isRectangle ? `
+                    <div>
+                        <label class="block mb-1">Scale</label>
+                        <input type="number" value="${spot.scale}" onchange="updateSpotField(${index}, 'scale', parseFloat(this.value))" class="w-full border p-2 rounded" />
+                    </div>
+                    ` : `
+                    <div>
+                        <label class="block mb-1">Scale X</label>
+                        <input type="number" value="${spot.scaleX}" onchange="updateSpotField(${index}, 'scaleX', parseFloat(this.value))" class="w-full border p-2 rounded" />
+                    </div>
+                    <div>
+                        <label class="block mb-1">Scale Y</label>
+                        <input type="number" value="${spot.scaleY}" onchange="updateSpotField(${index}, 'scaleY', parseFloat(this.value))" class="w-full border p-2 rounded" />
+                    </div>
+                    `}
+                    <div>
+                        <label class="block mb-1">X Position (0-10)</label>
+                        <input type="number" min="0" max="10" step="0.1" value="${spot.x}" onchange="updateSpotField(${index}, 'x', Math.min(10, Math.max(0, parseFloat(this.value))))" class="w-full border p-2 rounded" />
+                        <p class="text-sm text-gray-500 mt-1">0 = Left, 10 = Right</p>
+                    </div>
+                    <div>
+                        <label class="block mb-1">Y Position (0-10)</label>
+                        <input type="number" min="0" max="10" step="0.1" value="${spot.y}" onchange="updateSpotField(${index}, 'y', Math.min(10, Math.max(0, parseFloat(this.value))))" class="w-full border p-2 rounded" />
+                        <p class="text-sm text-gray-500 mt-1">0 = Top, 10 = Bottom</p>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block mb-1">Description</label>
+                        <textarea rows="3" onchange="updateSpotField(${index}, 'description', this.value)" class="w-full border p-2 rounded">${spot.description}</textarea>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block mb-1">Hover State Image (1200x800px)</label>
+                        <p class="text-sm text-gray-500 mb-2">This image will replace the main image when the hotspot is hovered over. Must match main image dimensions.</p>
+                        <input type="file" accept="image/*" onchange="handleHoverImageUpload(${index}, this)" class="w-full border p-2 rounded" />
+                        <div id="hoverPreview${index}"></div>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block mb-1">Info Panel Image</label>
+                        <input type="file" accept="image/*" onchange="handleInfoPanelImageUpload(${index}, this)" class="w-full border p-2 rounded" />
+                        <div id="infoPreview${index}"></div>
+                    </div>
+                </div>
+            `;
+            return spotDiv;
+        }
+
+        // Render all spots
+        function renderSpots() {
+            const container = document.getElementById('spotsContainer');
+            container.innerHTML = '';
+            spots.forEach((spot, index) => {
+                container.appendChild(createSpotElement(spot, index));
+            });
+            // Re-add preview images
+            spots.forEach((spot, index) => {
+                if (hoverImages[index]) {
+                    const hoverDiv = document.getElementById(`hoverPreview${index}`);
+                    hoverDiv.innerHTML = `
+                        <img src="${hoverImages[index].url}" alt="Hover ${index + 1}" class="mt-2 max-h-32" />
+                        <p class="text-sm text-gray-500 mt-1">File: ${hoverImages[index].name}</p>
+                    `;
+                }
+                if (infoPanelImages[index]) {
+                    const infoDiv = document.getElementById(`infoPreview${index}`);
+                    infoDiv.innerHTML = `<img src="${infoPanelImages[index].url}" alt="Info Panel ${index + 1}" class="mt-2 max-h-32" />`;
+                }
+            });
+        }
+
+        // Update spot field
+        function updateSpotField(index, field, value) {
+            if (spots[index]) {
+                spots[index][field] = value;
+                drawCanvas();
+            }
+        }
+
+        // Toggle rectangle mode
+        function toggleRectangleMode(index) {
+            if (spots[index]) {
+                const isRectangle = !spots[index].isRectangle;
+                spots[index].isRectangle = isRectangle;
+                spots[index].scaleX = spots[index].scaleX || spots[index].scale;
+                spots[index].scaleY = spots[index].scaleY || spots[index].scale;
+                renderSpots();
+                drawCanvas();
+            }
+        }
+
+        // Add spot
+        function addSpot() {
+            spots.push({ ...defaultSpot });
+            showColors = true;
+            renderSpots();
+            drawCanvas();
+        }
+
+        // Remove spot
+        function removeSpot(index) {
+            spots.splice(index, 1);
+            delete hoverImages[index];
+            delete infoPanelImages[index];
+            renderSpots();
+            drawCanvas();
+        }
+
+        // Handle main image upload
+        async function handleMainImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    await validateImageDimensions(file);
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        mainImage = e.target.result;
+                        drawCanvas();
+                    };
+                    reader.readAsDataURL(file);
+                } catch (error) {
+                    alert(error);
+                    e.target.value = '';
+                }
+            }
+        }
+
+        // Handle hover image upload
+        async function handleHoverImageUpload(index, input) {
+            const file = input.files[0];
+            if (file) {
+                try {
+                    await validateImageDimensions(file);
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        hoverImages[index] = {
+                            url: e.target.result,
+                            name: file.name
+                        };
+                        updateSpotField(index, 'hoverImage', file.name);
+                        const hoverDiv = document.getElementById(`hoverPreview${index}`);
+                        hoverDiv.innerHTML = `
+                            <img src="${hoverImages[index].url}" alt="Hover ${index + 1}" class="mt-2 max-h-32" />
+                            <p class="text-sm text-gray-500 mt-1">File: ${hoverImages[index].name}</p>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } catch (error) {
+                    alert(error);
+                    input.value = '';
+                }
+            }
+        }
+
+        // Handle info panel image upload
+        function handleInfoPanelImageUpload(index, input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    infoPanelImages[index] = {
+                        url: e.target.result,
+                        name: file.name
+                    };
+                    updateSpotField(index, 'image', file.name);
+                    const infoDiv = document.getElementById(`infoPreview${index}`);
+                    infoDiv.innerHTML = `<img src="${infoPanelImages[index].url}" alt="Info Panel ${index + 1}" class="mt-2 max-h-32" />`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Toggle colors
+        function toggleColors() {
+            showColors = !showColors;
+            drawCanvas();
+        }
+
+        // Update iframe path
+        function updateIframePath() {
+            const input = document.getElementById('destinationPathInput');
+            let path = input.value.trim();
+            if (path && !path.endsWith('/')) {
+                path += '/';
+            }
+            destinationPath = path;
+            updateIframeCode();
+        }
+
+        // Update iframe code display
+        function updateIframeCode() {
+            const codeElement = document.getElementById('iframeCode');
+            const pathToUse = destinationPath || '{Destination-folder-path}';
+            codeElement.textContent = `<div class="embed-responsive" style="padding: 60% 40%; float: left;">
+  <iframe style="overflow: hidden !important;" src="${pathToUse}hotspot-project/index.html" allowfullscreen="allowfullscreen">
+  </iframe>
+</div>`;
+        }
+
+        // Copy iframe code
+        function copyIframeCode() {
+            const code = document.getElementById('iframeCode').textContent;
+            navigator.clipboard.writeText(code)
+                .then(() => {
+                    const copyBtn = document.getElementById('copyBtn');
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy code. Please try selecting and copying manually.');
+                });
+        }
+
+        // Export project
+        async function exportProject() {
+            console.log("Export initiated");
+
+            const zip = new JSZip();
+            zip.file("index.html", getHtmlTemplate());
+
+            const spotsJs = 'var setScale = 2;\n\nconst spots = ' + JSON.stringify(spots, null, 2) + ';\n\nvar showColors = false;';
+            zip.file("spots.js", spotsJs);
+
+            const imgFolder = zip.folder("images");
+            if (mainImage) {
+                const mainBlob = await fetch(mainImage).then(r => r.blob());
+                imgFolder.file("main.png", mainBlob);
+            }
+
+            const hoverPromises = Object.entries(hoverImages).map(async ([index, imageData]) => {
+                const blob = await fetch(imageData.url).then(r => r.blob());
+                imgFolder.file(imageData.name, blob);
+            });
+
+            const infoPanelPromises = Object.entries(infoPanelImages).map(async ([index, imageData]) => {
+                const blob = await fetch(imageData.url).then(r => r.blob());
+                imgFolder.file(imageData.name, blob);
+            });
+
+            await Promise.all([...hoverPromises, ...infoPanelPromises]);
+
+            const content = await zip.generateAsync({ type: "blob" });
+            const url = URL.createObjectURL(content);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "hotspot-project.zip";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            document.getElementById('iframeCodeSection').classList.remove('hidden');
+            updateIframeCode();
+
+            setTimeout(() => {
+                document.getElementById('iframeCodeSection').scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+        }
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('mainImageInput').addEventListener('change', handleMainImageUpload);
+            document.getElementById('toggleColorsBtn').addEventListener('click', toggleColors);
+            document.getElementById('addSpotBtn').addEventListener('click', addSpot);
+            document.getElementById('exportBtn').addEventListener('click', exportProject);
+            document.getElementById('copyBtn').addEventListener('click', copyIframeCode);
+            document.getElementById('destinationPathInput').addEventListener('input', updateIframePath);
+        });
+    </script>
+</body>
+</html>
